@@ -1,0 +1,33 @@
+---
+- name: Compactacao e Limpeza de arquivos 
+  hosts: localhost
+  connection: local
+  vars:
+    directories: ['/servidor','/servidor/importacao/','/servidor/exportacao/','/servidor/logs','/retag']
+    filepattern: [ 'LOG.SERVER*','lognfce_server*','logr*','CAPL*','log.imediata*','log.importa*','imp.*','LV*','*.pdv_server.txt','*.fastFood.txt','LOG.GERATAB*','LOG.LIMPABD*', 'LOG.SCC*','movoutra.*','conciliasat.*.log','importa.*.txt','netpoints.*.txt']
+
+  tasks:
+    - name: Criar pasta BACKUP_CAPTS
+      file:
+        path: /servidor/BACKUP_CAPTS
+        state: directory
+        mode: 0777
+        recurse: yes
+    
+    - name: Localizar Logs antigos da pasta servidor
+      find:
+        paths: "{{directories}}"
+        patterns: "{{filepattern}}" 
+        age: 10d
+        age_stamp: mtime
+      register: saidalogserver
+
+    - name: Apagando Logs
+      file:
+        path: "{{item.path}}"
+        state: absent
+      with_items: "{{ saidalogserver.files }}"
+
+
+
+    
